@@ -50,8 +50,8 @@ import eu.trentorise.smartcampus.vas.communicator.util.NotificationsUtil;
 public class EventProcessorImpl implements DomainUpdateListener {
 
 	private static Log logger = LogFactory.getLog(EventProcessorImpl.class);
-	private static final String TYPE_SOURCE = "smartcampus.services.communicator.AbstractSource";
-	private static final String TYPE_FEED = "smartcampus.services.communicator.AbstractFeed";
+	private static final String TYPE_SOURCE = "eu.trentorise.smartcampus.domain.communicator.AbstractSource";
+	private static final String TYPE_FEED = "eu.trentorise.smartcampus.domain.communicator.AbstractFeed";
 	private static final String EVENT_UPDATE = "update";
 
 	
