@@ -74,7 +74,7 @@ public class CommunicatorManager {
 	private void createDefaultSources(User user) throws DataException {
 		List<String> factories = null;
 		try {
-			factories = domainClient.searchDomainObjects("smartcampus.services.communicator.AbstractSourceFactory", null);
+			factories = domainClient.searchDomainObjects("eu.trentorise.smartcampus.domain.communicator.AbstractSourceFactory", null);
 		} catch (InvocationException e1) {
 			logger.error("Failed to access factories: "+e1.getMessage());
 			throw new DataException("Failed to access factories");
