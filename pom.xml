@@ -14,6 +14,9 @@
 
 	<properties>
 		<spring.version>3.1.0.RELEASE</spring.version>
+		<ac-service-provider-api>1.1</ac-service-provider-api>
+		<ac-service-provider-filter>1.1</ac-service-provider-filter>
+		<service-engine-client>1.4</service-engine-client>		
 	</properties>
 	
 	<dependencies>

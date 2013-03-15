@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Notification;
+import eu.trentorise.smartcampus.communicator.model.NotificationAuthor;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
@@ -97,6 +98,21 @@ public class NotificationController extends RestController {
 		return notificationManager.delete(id);
 	}
 
+	@RequestMapping(method = RequestMethod.POST, value = "/eu.trentorise.smartcampus.communicator.model.Notification")
+	public @ResponseBody
+	void create(HttpServletRequest request, HttpServletResponse response,
+			HttpSession session,
+			@RequestBody Notification notification) throws DataException,
+			IOException, NotFoundException {
+
+		User user = retrieveUser(request, response);
+		if (user == null) {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		}
+
+		notificationManager.create(notification);
+	}	
+	
 	@RequestMapping(method = RequestMethod.PUT, value = "/eu.trentorise.smartcampus.communicator.model.Notification/{id}")
 	public @ResponseBody
 	void update(HttpServletRequest request, HttpServletResponse response,
@@ -143,4 +159,56 @@ public class NotificationController extends RestController {
 				(notList == null) ? Collections.<Notification> emptyList() : notList);
 		return result;
 	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/send/app/{appId}")
+	public @ResponseBody
+	void sendAppNotification(HttpServletRequest request, HttpServletResponse response,
+			HttpSession session,
+			@RequestBody Notification notification, @PathVariable("appId") String appId) throws DataException,
+			IOException, NotFoundException {
+
+		String usersParam = request.getParameter("users");
+		ObjectMapper mapper = new ObjectMapper();
+		List<String> users = mapper.readValue(usersParam, List.class);
+		
+		notification.setType(appId);
+		
+		for (String receiver: users) {
+			notification.setId(null);
+			notification.setUser(receiver);
+			notificationManager.create(notification);
+		}
+	}
+
+		@RequestMapping(method = RequestMethod.POST, value = "/send/user")
+		public @ResponseBody
+		void sendUserNotification(HttpServletRequest request, HttpServletResponse response,
+				HttpSession session,
+				@RequestBody Notification notification) throws DataException,
+				IOException, NotFoundException {
+
+			User user = retrieveUser(request, response);
+			if (user == null) {
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			}			
+			
+			String usersParam = request.getParameter("users");
+			ObjectMapper mapper = new ObjectMapper();
+			List<String> users = mapper.readValue(usersParam, List.class);			
+			
+			NotificationAuthor author = new NotificationAuthor();
+			author.setSocialId(user.getSocialId());
+			notification.setAuthor(author)	;
+			notification.setType("user");
+			
+			for (String receiver: users) {
+				notification.setId(null);
+				notification.setUser(receiver);
+				notificationManager.create(notification);
+			}
+		
+		
+	}		
+	
+	
 }
