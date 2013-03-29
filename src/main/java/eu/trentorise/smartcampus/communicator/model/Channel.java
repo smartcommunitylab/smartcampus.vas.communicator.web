@@ -15,7 +15,6 @@
  ******************************************************************************/
 package eu.trentorise.smartcampus.communicator.model;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,23 +89,34 @@ public class Channel extends BasicObject {
 		return actionMap;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public boolean applies(Notification notification) {
 		// source type should match
 		if (sourceType != null && ! sourceType.equals(notification.getType())) return false;
 		// keywords should match
 		String text = (notification.getTitle()+ " "+notification.getDescription()).toLowerCase();
-		List<String> keywords = (filterData == null || filterData.get(FD_KEYWORDS) == null) ? Collections.<String>emptyList() : (List<String>)filterData.get(FD_KEYWORDS);
 		
-		if (keywords.size() > 0) {
-			for (String keyword : keywords) {
-				String k = keyword.toLowerCase();
+		String keywords = (filterData == null || filterData.get(FD_KEYWORDS) == null) ? null : (String)filterData.get(FD_KEYWORDS);
+		if (keywords != null) {
+			String[] keywordArr = keywords.split(",");
+			for (String keyword : keywordArr) {
+				String k = keyword.trim().toLowerCase();
 				if (text.matches(".*[\\p{Punct}\\p{Blank}]" + k + "[\\p{Punct}\\p{Blank}].*")) {
 					return true;
 				}
 			}
-			return false;
 		}
+		
+//		List<String> keywords = (filterData == null || filterData.get(FD_KEYWORDS) == null) ? Collections.<String>emptyList() : (List<String>)filterData.get(FD_KEYWORDS);
+//		
+//		if (keywords.size() > 0) {
+//			for (String keyword : keywords) {
+//				String k = keyword.toLowerCase();
+//				if (text.matches(".*[\\p{Punct}\\p{Blank}]" + k + "[\\p{Punct}\\p{Blank}].*")) {
+//					return true;
+//				}
+//			}
+//			return false;
+//		}
 		return true;
 	}
 
