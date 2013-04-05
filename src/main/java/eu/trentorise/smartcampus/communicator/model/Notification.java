@@ -162,7 +162,7 @@ public class Notification extends BasicObject {
 		notification.setTimestamp(timestamp);
 		notification.setTitle(title);
 		notification.setType(type);
-		notification.setUser(user);
+		notification.setUser(userId);
 		notification.setId(userCopyId(getId(), userId));
 		return notification;
 	}

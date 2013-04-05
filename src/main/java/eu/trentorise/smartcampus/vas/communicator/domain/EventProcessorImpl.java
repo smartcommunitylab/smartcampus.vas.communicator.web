@@ -49,6 +49,10 @@ import eu.trentorise.smartcampus.vas.communicator.util.NotificationsUtil;
 
 public class EventProcessorImpl implements DomainUpdateListener {
 
+	/**
+	 * 
+	 */
+	private static final String FIELD_SOURCE_TYPE = "sourceType";
 	private static Log logger = LogFactory.getLog(EventProcessorImpl.class);
 	private static final String TYPE_SOURCE = "eu.trentorise.smartcampus.domain.communicator.AbstractSource";
 	private static final String TYPE_FEED = "eu.trentorise.smartcampus.domain.communicator.AbstractFeed";
@@ -89,7 +93,7 @@ public class EventProcessorImpl implements DomainUpdateListener {
 	private void processEvent(DomainEvent event) throws JsonParseException, JsonMappingException, IOException, DataException {
 		Map<String, Object> payload = mapper.readValue(event.getPayload(), Map.class);
 		String userId = (String) payload.get("userId");
-		String sourceType = (String) payload.get("sourceType");
+		String sourceType = (String) payload.get(FIELD_SOURCE_TYPE);
 		List<Map<String, Object>> notificationMaps = (List<Map<String, Object>>) payload.get("notifications");
 
 		if (notificationMaps == null || notificationMaps.isEmpty()) {
@@ -157,7 +161,7 @@ public class EventProcessorImpl implements DomainUpdateListener {
 				for (String uId : userNotifications.keySet()) {
 					Notification n = userNotifications.get(uId);
 					if (!n.markedDeleted()) {
-						storage.storeObject(notification);
+						storage.storeObject(n);
 						incrementUserCounter(uId, counters);
 						// check if has to send mails 
 						if (!mailSet.isEmpty()) {
@@ -230,11 +234,13 @@ public class EventProcessorImpl implements DomainUpdateListener {
 
 	private List<Channel> findUserFeedChannels(String sourceType) throws DataException {
 		Map<String,Object> criteriaMap = new HashMap<String, Object>();
+		criteriaMap.put(FIELD_SOURCE_TYPE, sourceType);
 		return storage.searchObjects(Channel.class, criteriaMap);
 	}
 
 	private List<Channel> findUserSourceChannels(String userId, String sourceType) throws DataException {
 		Map<String,Object> criteriaMap = new HashMap<String, Object>();
+		criteriaMap.put(FIELD_SOURCE_TYPE, sourceType);
 		return storage.searchObjects(Channel.class, criteriaMap, userId);
 	}
 	private void sendEmail(Map<String, Map<String, List<Notification>>> toSend) throws DataException {

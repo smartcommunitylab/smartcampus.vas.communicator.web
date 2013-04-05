@@ -104,6 +104,7 @@ public class Channel extends BasicObject {
 					return true;
 				}
 			}
+			return false;
 		}
 		
 //		List<String> keywords = (filterData == null || filterData.get(FD_KEYWORDS) == null) ? Collections.<String>emptyList() : (List<String>)filterData.get(FD_KEYWORDS);
