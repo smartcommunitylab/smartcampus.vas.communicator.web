@@ -31,12 +31,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.sun.istack.logging.Logger;
-
 import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.AppAccount;
 import eu.trentorise.smartcampus.communicator.model.CloudToPushType;
 import eu.trentorise.smartcampus.communicator.model.Configuration;
+import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.communicator.model.UserAccount;
 import eu.trentorise.smartcampus.controllers.SCController;
 import eu.trentorise.smartcampus.exceptions.AlreadyExistException;
@@ -44,6 +43,7 @@ import eu.trentorise.smartcampus.exceptions.NotFoundException;
 import eu.trentorise.smartcampus.exceptions.SmartCampusException;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.vas.communicator.manager.AppAccountManager;
+import eu.trentorise.smartcampus.vas.communicator.manager.NotificationManager;
 import eu.trentorise.smartcampus.vas.communicator.manager.UserAccountManager;
 
 @Controller
@@ -53,6 +53,9 @@ public class PushController extends SCController {
 
 	@Autowired
 	UserAccountManager userAccountManager;
+	
+	@Autowired
+	NotificationManager notificationManager;
 
 	@Autowired
 	AppAccountManager appAccountManager;
@@ -73,23 +76,23 @@ public class PushController extends SCController {
 	@Value("${gcm.registration.id.default.value}")
 	private String gcm_registration_id_default_value;
 
-	@RequestMapping(method = RequestMethod.POST, value = "/register/app/{appName}/{senderId}")
+	@RequestMapping(method = RequestMethod.POST, value = "/register/app/{appName}/{apikey}")
 	public @ResponseBody
 	boolean registerAppToPush(HttpServletRequest request,
 			@PathVariable String appName,
-			@PathVariable("senderId") String senderId, HttpSession session)
+			@PathVariable("apikey") String apikey, HttpSession session)
 			throws DataException, IOException, NotFoundException,
 			SmartCampusException, AlreadyExistException {
 
 		List<Configuration> listConf = new ArrayList<Configuration>();
 
 		// set value of sender/serverside app registration code
-		if (senderId == null)
-			senderId = gcm_sender_id_default_value;
+		if (apikey == null)
+			apikey = gcm_sender_id_default_value;
 		// if app is not registered?use ours?
 
 		Configuration e = new Configuration(gcm_sender_id_default_key,
-				CloudToPushType.GOOGLE, senderId);
+				CloudToPushType.GOOGLE, apikey);
 		listConf.add(e);
 
 		AppAccount appAccount;
@@ -152,6 +155,19 @@ public class PushController extends SCController {
 		userAccount.setConfigurations(listConf);
 		userAccountManager.update(userAccount);
 
+		Notification not = new Notification();
+		not.setDescription("Sei Registrato alle notifiche push");
+		not.setTitle("Sei Registrato alle notifiche push");
+		not.setType(appName);
+		not.setUser(String.valueOf(userAccount.getUserId()));
+		not.setId(null);
+		
+		try {
+			notificationManager.create(not);
+		} catch (eu.trentorise.smartcampus.presentation.common.exception.NotFoundException e1) {
+			e1.printStackTrace();
+		}
+		
 		return true;
 
 	}
