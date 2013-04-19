@@ -131,7 +131,7 @@ public class GoogleCloudMessengerManager implements PushServiceCloud {
 			}
 
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage()+senderId);
 			e.printStackTrace();
 			return false;
 		}
