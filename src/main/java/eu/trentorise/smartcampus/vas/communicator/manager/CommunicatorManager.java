@@ -213,7 +213,9 @@ public class CommunicatorManager {
 	}
 	public SyncData synchronize(User user, SyncData input) throws DataException {
 		ensureUserData(user);
-		SyncData output = storage.getSyncData(input.getVersion(), Utils.userId(user), true);
+		Map<String,Object> exclude = new HashMap<String, Object>();
+		exclude.put("readed", true);
+		SyncData output = storage.getSyncData(input.getVersion(), Utils.userId(user), true, null, exclude);
 		if (input.getDeleted() != null) {
 			for (String s : input.getDeleted().keySet()) {
 				if (s.equals(Channel.class.getName())) {
