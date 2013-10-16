@@ -28,7 +28,7 @@ import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 @Controller
 public class RestController {
 	
-	@Value("${basic.profile.server.url}")
+	@Value("${aacURL}")
 	private String profileURL;
 
 	protected BasicProfile getUser(HttpServletRequest request) throws SecurityException, ProfileServiceException  {
