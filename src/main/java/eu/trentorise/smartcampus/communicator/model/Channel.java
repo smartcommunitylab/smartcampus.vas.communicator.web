@@ -27,7 +27,7 @@ public class Channel extends BasicObject {
 	private static final long serialVersionUID = -8544225509851840357L;
 
 	private String title;
-	private Long userId;
+	private String userId;
 	private List<String> labelIds;
 	private List<Action> actions;
 
@@ -43,10 +43,10 @@ public class Channel extends BasicObject {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 	public Map<String, Object> getFilterData() {

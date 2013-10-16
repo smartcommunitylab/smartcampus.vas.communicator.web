@@ -36,10 +36,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
+import eu.trentorise.smartcampus.profileservice.ProfileServiceException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
 import eu.trentorise.smartcampus.vas.communicator.manager.NotificationManager;
 
@@ -56,9 +57,9 @@ public class NotificationController extends RestController {
 			@RequestParam("since") Long since,
 			@RequestParam("position") Integer position,
 			@RequestParam("count") Integer count) throws DataException,
-			IOException {
+			IOException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -72,9 +73,9 @@ public class NotificationController extends RestController {
 	Notification getNotification(HttpServletRequest request,
 			HttpServletResponse response, HttpSession session,
 			@PathVariable("id") String id) throws DataException, IOException,
-			NotFoundException {
+			NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -87,9 +88,9 @@ public class NotificationController extends RestController {
 	public @ResponseBody
 	boolean delete(HttpServletRequest request, HttpServletResponse response,
 			HttpSession session, @PathVariable("id") String id)
-			throws DataException, IOException, NotFoundException {
+			throws DataException, IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		}
@@ -102,9 +103,9 @@ public class NotificationController extends RestController {
 	void update(HttpServletRequest request, HttpServletResponse response,
 			HttpSession session, @PathVariable("id") String id,
 			@RequestBody Notification notification) throws DataException,
-			IOException, NotFoundException {
+			IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		}
@@ -120,7 +121,7 @@ public class NotificationController extends RestController {
 			HttpSession session, @RequestParam("filter") String jsonFilter,
 			@RequestParam Long since, @RequestParam Integer position, 
 			@RequestParam Integer count)
-			throws IOException, DataException {
+			throws IOException, DataException, SecurityException, ProfileServiceException {
 
 		NotificationFilter filter = null;
 		ObjectMapper mapper = new ObjectMapper();
@@ -130,7 +131,7 @@ public class NotificationController extends RestController {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		}
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;

@@ -31,10 +31,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Preference;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
+import eu.trentorise.smartcampus.profileservice.ProfileServiceException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.manager.CommunicatorManager;
 import eu.trentorise.smartcampus.vas.communicator.manager.PreferenceManager;
 
@@ -50,9 +51,9 @@ public class PreferenceController extends RestController {
 	public @ResponseBody
 	List<Preference> getPreferenceByUser(HttpServletRequest request,
 			HttpServletResponse response, HttpSession session)
-			throws DataException, IOException, NotFoundException {
+			throws DataException, IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -66,9 +67,9 @@ public class PreferenceController extends RestController {
 	Preference getPreference(HttpServletRequest request,
 			HttpServletResponse response, HttpSession session,
 			@PathVariable String id) throws DataException, IOException,
-			NotFoundException {
+			NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -88,9 +89,9 @@ public class PreferenceController extends RestController {
 	Preference create(HttpServletRequest request,
 			HttpServletResponse response, HttpSession session,
 			@RequestBody Preference pref) throws DataException,
-			IOException, NotFoundException {
+			IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;
@@ -104,9 +105,9 @@ public class PreferenceController extends RestController {
 	public @ResponseBody
 	boolean delete(HttpServletRequest request, HttpServletResponse response,
 			HttpSession session, @PathVariable String id) throws DataException,
-			IOException, NotFoundException {
+			IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return false;
@@ -120,9 +121,9 @@ public class PreferenceController extends RestController {
 	public @ResponseBody
 	void update(HttpServletRequest request, HttpServletResponse response,
 			HttpSession session, @RequestBody Preference pref)
-			throws DataException, IOException, NotFoundException {
+			throws DataException, IOException, NotFoundException, SecurityException, ProfileServiceException {
 
-		User user = retrieveUser(request, response);
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		}

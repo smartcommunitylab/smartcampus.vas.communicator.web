@@ -30,7 +30,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Channel;
 import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.communicator.model.Preference;
@@ -38,6 +37,7 @@ import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
 import eu.trentorise.smartcampus.presentation.data.BasicObject;
 import eu.trentorise.smartcampus.presentation.data.SyncData;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
 import eu.trentorise.smartcampus.vas.communicator.storage.CommunicatorStorage;
 import eu.trentorise.smartcampus.vas.communicator.util.MailNotificationSender;
@@ -58,20 +58,20 @@ public class CommunicatorManager {
 	// check feed updates within last two days
 	private static final long OLD_FEED_MESSAGES_INTERVAL = 1000*60*60*24*2L;
 	
-	private Preference ensureUserData(User user) throws DataException {
+	private Preference ensureUserData(BasicProfile user) throws DataException {
 		Preference userPrefs = null;
 		try {
-			userPrefs = getByUser(Utils.userId(user));
+			userPrefs = getByUser(user.getUserId());
 		} catch (NotFoundException e) {
 			userPrefs = new Preference();
-			userPrefs.setUser(Utils.userId(user));
+			userPrefs.setUser(user.getUserId());
 			createDefaultSources(user);
-			userPrefs.setId(userPrefs.getUser());
+			userPrefs.setId(user.getUserId());
 			storage.storeObject(userPrefs);
 		}
 		return userPrefs;
 	}
-	private void createDefaultSources(User user) throws DataException {
+	private void createDefaultSources(BasicProfile user) throws DataException {
 		List<String> factories = null;
 		try {
 			factories = domainClient.searchDomainObjects("eu.trentorise.smartcampus.domain.communicator.AbstractSourceFactory", null);
@@ -81,8 +81,8 @@ public class CommunicatorManager {
 		}
 		
 		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put("userId", Utils.userId(user));
-		parameters.put("userSocialId", ""+user.getSocialId());
+		parameters.put("userId", user.getUserId());
+		parameters.put("userSocialId", user.getSocialId());
 
 		if (factories != null) {
 			for (String f : factories) {
@@ -90,8 +90,8 @@ public class CommunicatorManager {
 					DomainObject o = new DomainObject(f);
 					domainClient.invokeDomainOperation("createDefaultSource", o.getType(), o.getId(), parameters, null, null);
 					Channel channel = new Channel();
-					channel.setUserId(user.getId());
-					channel.setUser(Utils.userId(user));
+					channel.setUserId(user.getUserId());
+					channel.setUser(user.getUserId());
 					channel.setFeed(false);
 					channel.setSourceType((String)o.getContent().get("sourceType"));
 					channel.setTitle((String)o.getContent().get("name"));
@@ -115,19 +115,19 @@ public class CommunicatorManager {
 	}
 
 	
-	public Preference getPreferences(User user) throws DataException {
+	public Preference getPreferences(BasicProfile user) throws DataException {
 		return ensureUserData(user);
 	}
 
-	public void storePreferences(User user, Preference preference) throws DataException {
+	public void storePreferences(BasicProfile user, Preference preference) throws DataException {
 		ensureUserData(user);
-		preference.setUser(Utils.userId(user));
+		preference.setUser(user.getUserId());
 		storage.storeObject(preference);
 	}
 
-	public void storeChannel(User user, Channel channel) throws DataException {
-		channel.setUser(Utils.userId(user));
-		channel.setUserId(user.getId());
+	public void storeChannel(BasicProfile user, Channel channel) throws DataException {
+		channel.setUser(user.getUserId());
+		channel.setUserId(user.getUserId());
 
 		/*
 		 * In case of new feed channel, apply the filter to the buffered feed messages
@@ -143,10 +143,10 @@ public class CommunicatorManager {
 			}
 		storage.storeObject(channel);
 	}
-	private void applyNewSourceChannelToOldMessages(User user, Channel channel) throws DataException {
+	private void applyNewSourceChannelToOldMessages(BasicProfile user, Channel channel) throws DataException {
 		NotificationFilter filter = new NotificationFilter();
 		filter.setSourceType(channel.getSourceType());
-		List<Notification> notifications = storage.searchNotifications(Utils.userId(user), 0L, 0, -1, filter);
+		List<Notification> notifications = storage.searchNotifications(user.getUserId(), 0L, 0, -1, filter);
 		Set<String> toSend = new HashSet<String>();
 		if (notifications != null) {
 			for (Notification n : notifications) {
@@ -162,7 +162,7 @@ public class CommunicatorManager {
 			}
 		}
 	}
-	private void applyNewFeedChannelToOldMessages(User user, Channel channel) throws DataException {
+	private void applyNewFeedChannelToOldMessages(BasicProfile user, Channel channel) throws DataException {
 		// channel is new
 		long since = 0L;
 		NotificationFilter filter = new NotificationFilter();
@@ -176,12 +176,12 @@ public class CommunicatorManager {
 				if (n.getTimestamp() > 0 && (now - n.getTimestamp())>OLD_FEED_MESSAGES_INTERVAL) continue;
 				if (channel.applies(n)) {
 					Notification newNotification = null;
-					String copyId = Notification.userCopyId(n.getId(), Utils.userId(user));
+					String copyId = Notification.userCopyId(n.getId(), user.getUserId());
 					try {
 						newNotification = storage.getObjectById(copyId, Notification.class);
 					} catch (NotFoundException e1) {
-						newNotification = n.copy(Utils.userId(user));
-						newNotification.setUser(Utils.userId(user));
+						newNotification = n.copy(user.getUserId());
+						newNotification.setUser(user.getUserId());
 					}
 					
 					newNotification.addChannelId(channel.getId());
@@ -211,11 +211,11 @@ public class CommunicatorManager {
 			logger.error("Problem deleting channel "+id+": "+e.getMessage());
 		}
 	}
-	public SyncData synchronize(User user, SyncData input) throws DataException {
+	public SyncData synchronize(BasicProfile user, SyncData input) throws DataException {
 		ensureUserData(user);
 		Map<String,Object> exclude = new HashMap<String, Object>();
 		exclude.put("readed", true);
-		SyncData output = storage.getSyncData(input.getVersion(), Utils.userId(user), true, null, exclude);
+		SyncData output = storage.getSyncData(input.getVersion(), user.getUserId(), true, null, exclude);
 		if (input.getDeleted() != null) {
 			for (String s : input.getDeleted().keySet()) {
 				if (s.equals(Channel.class.getName())) {
@@ -228,13 +228,13 @@ public class CommunicatorManager {
 		if (input.getUpdated() != null) {
 			for (String s : input.getUpdated().keySet()) {
 				for (BasicObject o : input.getUpdated().get(s)) {
-					o.setUser(Utils.userId(user));
+					o.setUser(user.getUserId());
 					if (s.equals(Channel.class.getName())) {
 						Channel f = (Channel)o;
 						storeChannel(user, f);
 					} 
 					else if (s.equals(Preference.class.getName())) {
-						List<Preference> list = storage.getObjectsByType(Preference.class, Utils.userId(user));
+						List<Preference> list = storage.getObjectsByType(Preference.class, user.getUserId());
 						if (list != null) {
 							for (Preference p : list) storage.deleteObjectPermanently(p);
 						}
@@ -243,12 +243,12 @@ public class CommunicatorManager {
 			}
 		}
 		// check new message created/updated with new/updated channels
-		SyncData newOutput = storage.getSyncData(output.getVersion(), Utils.userId(user), true);
+		SyncData newOutput = storage.getSyncData(output.getVersion(), user.getUserId(), true);
 		if (newOutput != null) {
 			merge(output,newOutput);
 		}
 
-		storage.cleanSyncData(input, Utils.userId(user));
+		storage.cleanSyncData(input, user.getUserId());
 		return output;
 	}
 	
@@ -271,9 +271,9 @@ public class CommunicatorManager {
 		}
 
 	}
-	public void deleteUser(User user) throws DataException {
-		storage.deleteObjectsPermanently(Notification.class, Utils.userId(user));
-		storage.deleteObjectsPermanently(Channel.class, Utils.userId(user));
+	public void deleteUser(BasicProfile user) throws DataException {
+		storage.deleteObjectsPermanently(Notification.class, user.getUserId());
+		storage.deleteObjectsPermanently(Channel.class, user.getUserId());
 		storage.deleteObjectPermanently(getPreferences(user));
 	}
 }

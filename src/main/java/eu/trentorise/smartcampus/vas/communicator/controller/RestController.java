@@ -15,41 +15,30 @@
  ******************************************************************************/
 package eu.trentorise.smartcampus.vas.communicator.controller;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
-import eu.trentorise.smartcampus.ac.provider.AcService;
-import eu.trentorise.smartcampus.ac.provider.filters.AcProviderFilter;
-import eu.trentorise.smartcampus.ac.provider.model.User;
+import eu.trentorise.smartcampus.profileservice.BasicProfileService;
+import eu.trentorise.smartcampus.profileservice.ProfileServiceException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 
 @Controller
 public class RestController {
+	
+	@Value("${basic.profile.server.url}")
+	private String profileURL;
 
-	private static final Logger logger = Logger.getLogger(RestController.class);
-	@Autowired
-	private AcService acService;
-
-	protected User retrieveUser(HttpServletRequest request,
-			HttpServletResponse response) {
-		try {
-			String token = request.getHeader(AcProviderFilter.TOKEN_HEADER);
-			return acService.getUserByToken(token);
-		} catch (Exception e) {
-			logger.error("Exception checking token");
-			try {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-				return null;
-			} catch (IOException e1) {
-				logger.error("Exception sending HTTP error");
-				return null;
-			}
-		}
+	protected BasicProfile getUser(HttpServletRequest request) throws SecurityException, ProfileServiceException  {
+		BasicProfileService bps = new BasicProfileService(profileURL);
+		return bps.getBasicProfile(getToken(request));
 	}
 
+	private String getToken(HttpServletRequest request) {
+		return (String) SecurityContextHolder.getContext().getAuthentication()
+				.getPrincipal();
+	}	
+	
 }

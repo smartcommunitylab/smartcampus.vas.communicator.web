@@ -22,16 +22,17 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.LabelObject;
 import eu.trentorise.smartcampus.communicator.model.Preference;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 
 public class PreferenceTest {
 
 	private static CommunicatorManager manager;
 
-	private static User user = null;
+//	private static User user = null;
+	private static BasicProfile user = null;
 
 	@BeforeClass
 	public static void setup() throws DataException {
@@ -39,8 +40,8 @@ public class PreferenceTest {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
 				"spring/applicationContext.xml");
 		manager = ctx.getBean(CommunicatorManager.class);
-		user = new User();
-		user.setId(1L);
+		user = new BasicProfile();
+		user.setUserId("1");
 
 		Preference p = manager.getPreferences(user);
 		p.setLabels(new LabelObject[] { new LabelObject("1", "work", "000000"), new LabelObject("2", "hobbies", "FFFFFF") });

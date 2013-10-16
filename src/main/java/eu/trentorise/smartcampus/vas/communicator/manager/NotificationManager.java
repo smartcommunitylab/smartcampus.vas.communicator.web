@@ -20,10 +20,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
 import eu.trentorise.smartcampus.vas.communicator.storage.CommunicatorStorage;
 
@@ -42,8 +42,8 @@ public class NotificationManager {
 		return true;
 	}
 
-	public List<Notification> get(User user, Long since, Integer position, Integer count, NotificationFilter filter) throws DataException {
-		return storage.searchNotifications(Utils.userId(user), since, position, count, filter);
+	public List<Notification> get(BasicProfile user, Long since, Integer position, Integer count, NotificationFilter filter) throws DataException {
+		return storage.searchNotifications(user.getUserId(), since, position, count, filter);
 	}
 
 	public Notification getById(String id) throws NotFoundException, DataException {
@@ -88,7 +88,7 @@ public class NotificationManager {
 		storage.storeObject(notification);
 	}
 	
-	public void deleteUserMessages(User user) throws DataException {
-		storage.deleteObjectsPermanently(Notification.class, Utils.userId(user));
+	public void deleteUserMessages(BasicProfile user) throws DataException {
+		storage.deleteObjectsPermanently(Notification.class, user.getUserId());
 	}
 }

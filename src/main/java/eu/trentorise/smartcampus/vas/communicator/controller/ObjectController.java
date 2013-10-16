@@ -31,12 +31,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
 import eu.trentorise.smartcampus.presentation.common.util.Util;
 import eu.trentorise.smartcampus.presentation.data.SyncData;
 import eu.trentorise.smartcampus.presentation.data.SyncDataRequest;
+import eu.trentorise.smartcampus.profileservice.ProfileServiceException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.manager.CommunicatorManager;
 
 @Controller
@@ -47,8 +48,8 @@ public class ObjectController extends RestController {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/sync")
 	public @ResponseBody
-	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestBody Map<String,Object> obj) throws DataException, IOException, NotFoundException, ClassNotFoundException {
-		User user = retrieveUser(request, response);
+	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestBody Map<String,Object> obj) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
+		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 			return null;

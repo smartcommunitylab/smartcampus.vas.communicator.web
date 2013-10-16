@@ -70,7 +70,7 @@
         <constructor-arg>
             <ref bean="connectionFactory" />
         </constructor-arg>
-        <property name="clientId" value="vas_communicator_src_subscriber" />
+        <property name="clientId" value="vas_communicator_1_1_src_subscriber" />
         <property name="domainUpdateListener" ref="eventProcessor" />
     </bean>
     <bean id="domainUpdateSubscriber" class="eu.trentorise.smartcampus.vas.communicator.domain.Subscriber">

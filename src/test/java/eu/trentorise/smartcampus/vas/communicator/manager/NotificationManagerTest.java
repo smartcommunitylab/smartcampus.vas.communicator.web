@@ -26,17 +26,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import eu.trentorise.smartcampus.ac.provider.model.User;
 import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
 import eu.trentorise.smartcampus.presentation.common.exception.NotFoundException;
+import eu.trentorise.smartcampus.profileservice.model.BasicProfile;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
 
 public class NotificationManagerTest {
 
 	private static NotificationManager manager;
 
-	private static User user = null;
+	private static BasicProfile user = null;
 
 	@Before
 	public void setup() throws DataException {
@@ -44,8 +44,8 @@ public class NotificationManagerTest {
 		ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(
 				"spring/applicationContext.xml");
 		manager = ctx.getBean(NotificationManager.class);
-		user = new User();
-		user.setId(1L);
+		user = new BasicProfile();
+		user.setUserId("1");
 
 		try {
 			cleanup();
@@ -57,7 +57,7 @@ public class NotificationManagerTest {
 		Notification n = new Notification();
 		n.setId("one");
 		n.setTitle("title1");
-		n.setUser(Utils.userId(user));
+		n.setUser(user.getUserId());
 		n.setChannelIds(Collections.singletonList("funnelFake"));
 		n.setLabelIds(Collections.singletonList("label1"));
 		n.setTimestamp(new GregorianCalendar(2012, 7, 30, 11, 0)
@@ -67,7 +67,7 @@ public class NotificationManagerTest {
 		n = new Notification();
 		n.setId("two");
 		n.setTitle("title2");
-		n.setUser(Utils.userId(user));
+		n.setUser(user.getUserId());
 		n.setLabelIds(Arrays.asList(new String[] { "label1", "label2" }));
 		n.setTimestamp(new GregorianCalendar(2012, 7, 30, 15, 0)
 				.getTimeInMillis());
@@ -76,7 +76,7 @@ public class NotificationManagerTest {
 		n = new Notification();
 		n.setId("tree");
 		n.setTitle("title3");
-		n.setUser(Utils.userId(user));
+		n.setUser(user.getUserId());
 		n.setLabelIds(Arrays.asList(new String[] { "label2", "label3" }));
 		n.setTimestamp(new GregorianCalendar(2012, 7, 29, 11, 0)
 				.getTimeInMillis());

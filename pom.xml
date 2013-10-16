@@ -1,8 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>eu.trentorise.smartcampus</groupId>
 	<artifactId>smartcampus.vas.communicator.web</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<packaging>war</packaging>
 	<name>smartcampus.vas.communicator.web</name>
 
@@ -15,7 +16,7 @@
 	<properties>
 		<spring.version>3.1.0.RELEASE</spring.version>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -39,12 +40,33 @@
 			<artifactId>syncstorage.web</artifactId>
 			<version>1.1</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<version>1.4</version>
-		</dependency>		
+		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-lgpl</artifactId>
+			<version>1.9.4</version>
+			<type>jar</type>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.trentorise.smartcampus</groupId>
+			<artifactId>profileservice.client</artifactId>
+			<version>2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.trentorise.smartcampus</groupId>
+			<artifactId>aac.client</artifactId>
+			<version>1.0</version>
+			<type>jar</type>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -58,14 +80,14 @@
 				</configuration>
 			</plugin>
 		</plugins>
-        <finalName>communicator</finalName>
+		<finalName>communicator_1_1</finalName>
 	</build>
 
 	<repositories>
-        <repository>
-            <id>SmartCampus</id>
-            <url>http://repository.smartcampuslab.it/content/groups/public</url>
-        </repository>
-    </repositories> 
+		<repository>
+			<id>SmartCampus</id>
+			<url>http://repository.smartcampuslab.it/content/groups/public</url>
+		</repository>
+	</repositories>
 
 </project>

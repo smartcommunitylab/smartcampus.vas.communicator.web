@@ -27,7 +27,6 @@ public class Subscriber {
 	
 	public Subscriber(DomainEngineClient client) {
 		try {
-			client.subscribeDomain("eu.trentorise.smartcampus.domain.communicator.AbstractSource", null);
 			client.subscribeDomain("eu.trentorise.smartcampus.domain.communicator.AbstractFeed", null);
 		} catch (InvocationException e) {
 			logger.error("Failed to subscribe for domain events: "+e.getMessage());
