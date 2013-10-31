@@ -16,8 +16,6 @@
 package eu.trentorise.smartcampus.vas.communicator.manager;
 
 import it.sayservice.platform.client.DomainEngineClient;
-import it.sayservice.platform.client.DomainObject;
-import it.sayservice.platform.client.InvocationException;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,45 +63,45 @@ public class CommunicatorManager {
 		} catch (NotFoundException e) {
 			userPrefs = new Preference();
 			userPrefs.setUser(user.getUserId());
-			createDefaultSources(user);
+//			createDefaultSources(user);
 			userPrefs.setId(user.getUserId());
 			storage.storeObject(userPrefs);
 		}
 		return userPrefs;
 	}
-	private void createDefaultSources(BasicProfile user) throws DataException {
-		List<String> factories = null;
-		try {
-			factories = domainClient.searchDomainObjects("eu.trentorise.smartcampus.domain.communicator.AbstractSourceFactory", null);
-		} catch (InvocationException e1) {
-			logger.error("Failed to access factories: "+e1.getMessage());
-			throw new DataException("Failed to access factories");
-		}
-		
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		parameters.put("userId", user.getUserId());
-		parameters.put("userSocialId", user.getSocialId());
-
-		if (factories != null) {
-			for (String f : factories) {
-				try {
-					DomainObject o = new DomainObject(f);
-					domainClient.invokeDomainOperation("createDefaultSource", o.getType(), o.getId(), parameters, null, null);
-					Channel channel = new Channel();
-					channel.setUserId(user.getUserId());
-					channel.setUser(user.getUserId());
-					channel.setFeed(false);
-					channel.setSourceType((String)o.getContent().get("sourceType"));
-					channel.setTitle((String)o.getContent().get("name"));
-					storage.storeObject(channel);
-				} catch (Exception e1) {
-					logger.error("Default source not created for factory "+f+": "+e1.getMessage());
-					continue;
-				}
-			}
-		}
-
-	}
+//	private void createDefaultSources(BasicProfile user) throws DataException {
+//		List<String> factories = null;
+//		try {
+//			factories = domainClient.searchDomainObjects("eu.trentorise.smartcampus.domain.communicator.AbstractSourceFactory", null);
+//		} catch (InvocationException e1) {
+//			logger.error("Failed to access factories: "+e1.getMessage());
+//			throw new DataException("Failed to access factories");
+//		}
+//		
+//		Map<String, Object> parameters = new HashMap<String, Object>();
+//		parameters.put("userId", user.getUserId());
+//		parameters.put("userSocialId", user.getSocialId());
+//
+//		if (factories != null) {
+//			for (String f : factories) {
+//				try {
+//					DomainObject o = new DomainObject(f);
+//					domainClient.invokeDomainOperation("createDefaultSource", o.getType(), o.getId(), parameters, null, null);
+//					Channel channel = new Channel();
+//					channel.setUserId(user.getUserId());
+//					channel.setUser(user.getUserId());
+//					channel.setFeed(false);
+//					channel.setSourceType((String)o.getContent().get("sourceType"));
+//					channel.setTitle((String)o.getContent().get("name"));
+//					storage.storeObject(channel);
+//				} catch (Exception e1) {
+//					logger.error("Default source not created for factory "+f+": "+e1.getMessage());
+//					continue;
+//				}
+//			}
+//		}
+//
+//	}
 	private Preference getByUser(String user) throws NotFoundException, DataException {
 		List<Preference> list = storage.getObjectsByType(Preference.class, user);
 		if (list == null || list.size() == 0) {
