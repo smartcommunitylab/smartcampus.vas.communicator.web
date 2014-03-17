@@ -49,7 +49,7 @@ public class ObjectController extends RestController {
 
 	@RequestMapping(method = RequestMethod.POST, value = "/sync")
 	public @ResponseBody
-	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestBody Map<String,Object> obj) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
+	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestBody Map<String, Object> obj) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
 		BasicProfile user = getUser(request);
 		if (user == null) {
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -57,18 +57,18 @@ public class ObjectController extends RestController {
 		}
 		SyncDataRequest syncReq = Util.convertRequest(obj, since);
 		SyncData out = communicatorManager.synchronize(user, syncReq.getSyncData());
-		return new ResponseEntity<SyncData>(out,HttpStatus.OK);
+		return new ResponseEntity<SyncData>(out, HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(method = RequestMethod.POST, value = "/synctype")
 	public @ResponseBody
-	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestParam String type) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
+	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestParam(value = "type", defaultValue = "") String type) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
 		SyncDataRequest syncReq = convertTypeRequest(type, since);
 		SyncData out = communicatorManager.simpleSynchronize(syncReq.getSyncData());
-		return new ResponseEntity<SyncData>(out,HttpStatus.OK);
-	}	
+		return new ResponseEntity<SyncData>(out, HttpStatus.OK);
+	}
 
-	public static SyncDataRequest convertTypeRequest(String sourceType, long since) throws ClassNotFoundException {
+	public static SyncDataRequest convertTypeRequest(String type, long since) throws ClassNotFoundException {
 		SyncData data = new SyncData();
 		try {
 			data.setVersion(since);
@@ -76,11 +76,13 @@ public class ObjectController extends RestController {
 			data.setVersion(0);
 		}
 		Map<String, Object> include = new TreeMap<String, Object>();
-		include.put("type", sourceType);
+		if (!type.isEmpty()) {
+			include.put("type", type);
+		}
 
 		data.setInclude(include);
 
 		return new SyncDataRequest(data, since);
 	}
-	
+
 }
