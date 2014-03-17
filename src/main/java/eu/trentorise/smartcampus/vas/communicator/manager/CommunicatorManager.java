@@ -250,6 +250,19 @@ public class CommunicatorManager {
 		return output;
 	}
 	
+	public SyncData simpleSynchronize(SyncData input) throws DataException {
+		Map<String,Object> exclude = new HashMap<String, Object>();
+		exclude.put("readed", true);
+		SyncData output = storage.getSyncData(input.getVersion(), null, false, input.getInclude(), exclude);
+		
+		SyncData newOutput = storage.getSyncData(output.getVersion(), null, true);
+		if (newOutput != null) {
+			merge(output,newOutput);
+		}
+
+		return output;
+	}	
+	
 	private void merge(SyncData output, SyncData newOutput) {
 		output.setVersion(newOutput.getVersion());
 		if (newOutput.getDeleted() != null) {
