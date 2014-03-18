@@ -261,6 +261,19 @@ public class CommunicatorManager {
 		}
 
 		return output;
+	}		
+	
+	public SyncData simpleSynchronizeFromTime(long from, SyncData input) throws DataException {
+		Map<String,Object> exclude = new HashMap<String, Object>();
+		exclude.put("readed", true);
+		SyncData output = storage.retrieveSyncDataFromTime(from, input.getInclude(), exclude);
+		
+//		SyncData newOutput = storage.retrieveSyncDataFromTime(from, input.getInclude(), exclude);
+//		if (newOutput != null) {
+//			merge(output,newOutput);
+//		}
+
+		return output;
 	}	
 	
 	private void merge(SyncData output, SyncData newOutput) {

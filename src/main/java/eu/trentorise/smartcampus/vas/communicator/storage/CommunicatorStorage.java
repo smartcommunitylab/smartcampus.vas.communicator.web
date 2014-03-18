@@ -15,9 +15,13 @@
  ******************************************************************************/
 package eu.trentorise.smartcampus.vas.communicator.storage;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -25,8 +29,11 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import eu.trentorise.smartcampus.communicator.model.Notification;
 import eu.trentorise.smartcampus.presentation.common.exception.DataException;
+import eu.trentorise.smartcampus.presentation.common.util.Util;
 import eu.trentorise.smartcampus.presentation.data.BasicObject;
+import eu.trentorise.smartcampus.presentation.data.SyncData;
 import eu.trentorise.smartcampus.presentation.storage.sync.mongo.BasicObjectSyncMongoStorage;
+import eu.trentorise.smartcampus.presentation.storage.sync.mongo.SyncObjectBean;
 import eu.trentorise.smartcampus.vas.communicator.filter.NotificationFilter;
 
 public class CommunicatorStorage extends BasicObjectSyncMongoStorage {
@@ -102,5 +109,70 @@ public class CommunicatorStorage extends BasicObjectSyncMongoStorage {
 		}
 	};
 	
+	@SuppressWarnings("unchecked")
+	public SyncData retrieveSyncDataFromTime(long from, Map<String, Object> include, Map<String, Object> exclude) {
+		SyncData syncData = new SyncData();
+		List<SyncObjectBean> list = searchFromDate(from, include, exclude);
+		if (list != null && !list.isEmpty()) {
+			Map<String,List<BasicObject>> updated = new HashMap<String, List<BasicObject>>();
+			Map<String,List<String>> deleted = new HashMap<String, List<String>>();
+			for (SyncObjectBean sob : list) {
+				if (sob.isDeleted()) {
+					List<String> deletedList = deleted.get(sob.getType());
+					if (deletedList == null) {
+						deletedList = new ArrayList<String>();
+						deleted.put(sob.getType(), deletedList);
+					}
+					deletedList.add(sob.getId());
+				} else {
+					List<BasicObject> updatedList = updated.get(sob.getType());
+					if (updatedList == null) {
+						updatedList = new ArrayList<BasicObject>();
+						updated.put(sob.getType(), updatedList);
+					}
+					try {
+						BasicObject b = Util.convertBeanToBasicObject(sob, (Class<? extends BasicObject>)Thread.currentThread().getContextClassLoader().loadClass(sob.getType()));
+						updatedList.add(b);
+					} catch (ClassNotFoundException e) {
+						continue;
+					}
+					
+				}
+			}
+			syncData.setDeleted(deleted);
+			syncData.setUpdated(updated);
+		}
+		return syncData;
+	}		
+	
+	@SuppressWarnings("unchecked")
+	private List<SyncObjectBean> searchFromDate(long from, Map<String, Object> include, Map<String, Object> exclude) {
+		Criteria criteria = new Criteria();
+		criteria.and("user").is(null);
+
+		criteria.and("content.timestamp").gt(from); 
+		if (include != null && !include.isEmpty()) {
+			for (String key : include.keySet()) {
+				Object value = include.get(key);
+				if (value instanceof Collection) {
+					criteria.and("content."+key).in((Collection<?>)value);
+				} else {
+					criteria.and("content."+key).is(value);
+				}
+			}
+		}
+		if (exclude != null && !exclude.isEmpty()) {
+			for (String key : exclude.keySet()) {
+				Object value = exclude.get(key);
+				if (value instanceof Collection) {
+					criteria.and("content."+key).nin((Collection<?>)value);
+				} else {
+					criteria.and("content."+key).ne(value);
+				}
+			}
+		}
+		
+		return mongoTemplate.find(Query.query(criteria), getObjectClass());
+	}		
 	
 }

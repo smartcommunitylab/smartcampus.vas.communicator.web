@@ -60,7 +60,7 @@ public class ObjectController extends RestController {
 		return new ResponseEntity<SyncData>(out, HttpStatus.OK);
 	}
 
-	@RequestMapping(method = RequestMethod.POST, value = "/synctype")
+	@RequestMapping(method = RequestMethod.GET, value = "/synctype")
 	public @ResponseBody
 	ResponseEntity<SyncData> syncData(HttpServletRequest request, HttpServletResponse response, @RequestParam long since, @RequestParam(value = "type", defaultValue = "") String type) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
 		SyncDataRequest syncReq = convertTypeRequest(type, since);
@@ -68,12 +68,22 @@ public class ObjectController extends RestController {
 		return new ResponseEntity<SyncData>(out, HttpStatus.OK);
 	}
 
-	public static SyncDataRequest convertTypeRequest(String type, long since) throws ClassNotFoundException {
+	@RequestMapping(method = RequestMethod.GET, value = "/synctypefromdate")
+	public @ResponseBody
+	ResponseEntity<SyncData> syncDataFromDate(HttpServletRequest request, HttpServletResponse response, @RequestParam long from, @RequestParam(value = "type", defaultValue = "") String type) throws DataException, IOException, NotFoundException, ClassNotFoundException, SecurityException, ProfileServiceException {
+		SyncDataRequest syncReq = convertTypeRequest(type, null);
+		SyncData out = communicatorManager.simpleSynchronizeFromTime(from, syncReq.getSyncData());
+		return new ResponseEntity<SyncData>(out, HttpStatus.OK);
+	}
+
+	public static SyncDataRequest convertTypeRequest(String type, Long since) throws ClassNotFoundException {
 		SyncData data = new SyncData();
-		try {
-			data.setVersion(since);
-		} catch (Exception e1) {
-			data.setVersion(0);
+		if (since != null) {
+			try {
+				data.setVersion(since);
+			} catch (Exception e1) {
+				data.setVersion(0);
+			}
 		}
 		Map<String, Object> include = new TreeMap<String, Object>();
 		if (!type.isEmpty()) {
@@ -82,7 +92,7 @@ public class ObjectController extends RestController {
 
 		data.setInclude(include);
 
-		return new SyncDataRequest(data, since);
+		return new SyncDataRequest(data, since != null? since: 0);
 	}
 
 }
