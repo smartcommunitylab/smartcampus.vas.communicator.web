@@ -52,11 +52,11 @@ public class EventProcessorImpl implements DomainUpdateListener {
 	/**
 	 * 
 	 */
-	private static final String FIELD_SOURCE_TYPE = "sourceType";
+	public static final String FIELD_SOURCE_TYPE = "sourceType";
 	private static Log logger = LogFactory.getLog(EventProcessorImpl.class);
-	private static final String TYPE_SOURCE = "eu.trentorise.smartcampus.domain.communicator.AbstractSource";
-	private static final String TYPE_FEED = "eu.trentorise.smartcampus.domain.communicator.AbstractFeed";
-	private static final String EVENT_UPDATE = "update";
+	public static final String TYPE_SOURCE = "eu.trentorise.smartcampus.domain.communicator.AbstractSource";
+	public static final String TYPE_FEED = "eu.trentorise.smartcampus.domain.communicator.AbstractFeed";
+	public static final String EVENT_UPDATE = "update";
 
 	
 	private int maxnum = 1000;

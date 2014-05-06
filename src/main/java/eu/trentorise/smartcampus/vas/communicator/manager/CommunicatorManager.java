@@ -44,6 +44,8 @@ import eu.trentorise.smartcampus.vas.communicator.util.NotificationsUtil;
 @Component
 public class CommunicatorManager {
 
+	public static final String GLOBAL_FEED = "SmartCampus";
+
 	private Log logger = LogFactory.getLog(getClass());
 	
 	@Autowired
@@ -66,6 +68,7 @@ public class CommunicatorManager {
 //			createDefaultSources(user);
 			userPrefs.setId(user.getUserId());
 			storage.storeObject(userPrefs);
+			applyGlobalFeedMessages(user.getUserId());
 		}
 		return userPrefs;
 	}
@@ -121,8 +124,30 @@ public class CommunicatorManager {
 		ensureUserData(user);
 		preference.setUser(user.getUserId());
 		storage.storeObject(preference);
+		applyGlobalFeedMessages(user.getUserId());
 	}
 
+	private void applyGlobalFeedMessages(String userId) throws DataException {
+		// channel is new
+		long since = 0L;
+		NotificationFilter filter = new NotificationFilter();
+		filter.setSourceType(GLOBAL_FEED);
+		List<Notification> notifications = storage.searchNotifications(null, since, 0, -1, filter);
+		if (notifications != null) {
+			long now = System.currentTimeMillis();
+			for (Notification n : notifications) {
+				if (n.getTimestamp() > 0 && (now - n.getTimestamp())>OLD_FEED_MESSAGES_INTERVAL) continue;
+				Notification newNotification = null;
+				String copyId = Notification.userCopyId(n.getId(), userId);
+				try {
+					newNotification = storage.getObjectById(copyId, Notification.class);
+				} catch (NotFoundException e1) {
+					newNotification = n.copy(userId);
+				}
+				storage.storeObject(newNotification);
+			}
+		}
+	}
 	public void storeChannel(BasicProfile user, Channel channel) throws DataException {
 		channel.setUser(user.getUserId());
 		channel.setUserId(user.getUserId());
