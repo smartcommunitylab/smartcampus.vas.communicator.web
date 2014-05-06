@@ -77,10 +77,8 @@ public class GlobalFeedManager {
 				}
 				storage.storeObject(n);
 				for (Preference p : prefs) {
-					if (p.getUser().equals("37")) {
-						Notification un = n.copy("37");
-						storage.storeObject(un);
-					}
+					Notification un = n.copy(p.getUser());
+					storage.storeObject(un);
 				}
 			}
 		}
